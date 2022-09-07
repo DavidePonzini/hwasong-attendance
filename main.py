@@ -4,7 +4,14 @@ import os.path
 
 
 QUERY_SELECT_ACTIVITY_NAMES = 'SELECT DISTINCT `Activity Name` FROM dataset ORDER BY 1'
-def QUERY_SELECT_ACTIVITY_FREQUENCY(activity, min_attendance=1):
+def QUERY_SELECT_ACTIVITY_FREQUENCY(activities, min_attendance=1):
+    if len(activities) == 0:
+        where_clause = ''
+    else:
+        where_clause = 'WHERE `Activity Name` = \'{}\''.format(activities[0])
+        for activity in activities[1:]:
+            where_clause += ' OR `Activity Name` = \'{}\''.format(activity)     # Note the space at line start!
+
     return '''
         SELECT
             Name,
@@ -13,8 +20,7 @@ def QUERY_SELECT_ACTIVITY_FREQUENCY(activity, min_attendance=1):
             DENSE_RANK() OVER(ORDER BY COUNT(*) DESC) as Rank
         FROM
             dataset
-        WHERE
-            `Activity Name` = '{activity_name}'
+        {where_clause}
         GROUP BY
             Name, Surname
         HAVING
@@ -22,7 +28,7 @@ def QUERY_SELECT_ACTIVITY_FREQUENCY(activity, min_attendance=1):
         ORDER BY
             Attendance DESC, Surname, Name
 
-    '''.format(activity_name=activity, min_attendance=min_attendance)
+    '''.format(where_clause=where_clause, min_attendance=min_attendance)
 
 
 # GUI Layout
@@ -34,14 +40,18 @@ file_column = [
     ],
     [
         sg.Listbox(
-            values=[], enable_events=True, size=(65, 20), key="-ACTIVITY-"
-        )
+            values=[],
+            enable_events=True,
+            size=(65, 20),
+            select_mode=sg.LISTBOX_SELECT_MODE_MULTIPLE,
+            key="-ACTIVITY-")
     ],
 ]
 
 attendance_column = [
     [
-        sg.Table(headings=['Rank', 'Surname', 'Name', 'Attendance'],
+        sg.Table(
+            headings=['Rank', 'Surname', 'Name', 'Attendance'],
             values=[],
             col_widths=[4, 20, 20, 10],
             auto_size_columns=False,
@@ -50,7 +60,8 @@ attendance_column = [
             key="-ATTENDANCE-")
     ],
     [
-        sg.Text('Developed by Davide Ponzini (davide.ponzini95@gmail.com)',
+        sg.Text(
+            'Developed by Davide Ponzini (davide.ponzini95@gmail.com)',
             justification='right',
             size=56,
             expand_x=True)
@@ -98,11 +109,16 @@ if __name__ == '__main__':
             if dataset is None:
                 continue
             
-            activity = values['-ACTIVITY-'][0]
-            attendance = sql_query.execute_query(dataset, QUERY_SELECT_ACTIVITY_FREQUENCY(activity=activity))
+            activities = values['-ACTIVITY-']
+            
+            if len(activities) == 0:
+                attendance = []
+            else:
+                attendance = sql_query.execute_query(dataset, QUERY_SELECT_ACTIVITY_FREQUENCY(activities=activities))
 
-            # Convert from array of columns (pandas df) to array of rows
-            attendance = [[elem[1].Rank, elem[1].Surname, elem[1].Name, elem[1].Attendance] for elem in attendance.iterrows()]
+                # Convert from array of columns (pandas df) to array of rows
+                attendance = [[elem[1].Rank, elem[1].Surname, elem[1].Name, elem[1].Attendance] for elem in attendance.iterrows()]
+            
             window['-ATTENDANCE-'].update(attendance)
 
 
