@@ -29,7 +29,7 @@ def QUERY_SELECT_ACTIVITY_FREQUENCY(activity, min_attendance=1):
 file_column = [
     [
         sg.Text("Attendance file"),
-        sg.In(size=(40, 1), enable_events=True, key="-FILE-"),
+        sg.In(size=40, enable_events=True, key="-FILE-"),
         sg.FileBrowse(file_types=(('Excel, CSV', '*.xlsx *.csv'),)),
     ],
     [
@@ -49,6 +49,12 @@ attendance_column = [
             num_rows=20,
             key="-ATTENDANCE-")
     ],
+    [
+        sg.Text('Developed by Davide Ponzini (davide.ponzini95@gmail.com)',
+            justification='right',
+            size=56,
+            expand_x=True)
+    ]
 ]
 
 # ----- Full layout -----
@@ -95,9 +101,9 @@ if __name__ == '__main__':
             activity = values['-ACTIVITY-'][0]
             attendance = sql_query.execute_query(dataset, QUERY_SELECT_ACTIVITY_FREQUENCY(activity=activity))
 
+            # Convert from array of columns (pandas df) to array of rows
             attendance = [[elem[1].Rank, elem[1].Surname, elem[1].Name, elem[1].Attendance] for elem in attendance.iterrows()]
-            
-            window['-ATTENDANCE-'].update(values=attendance)
+            window['-ATTENDANCE-'].update(attendance)
 
 
     window.close()
