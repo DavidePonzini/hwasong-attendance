@@ -1,6 +1,5 @@
 import sql_query
 import PySimpleGUI as sg
-import os.path
 
 
 QUERY_SELECT_ACTIVITY_NAMES = 'SELECT DISTINCT `Activity Name` FROM dataset ORDER BY 1'
