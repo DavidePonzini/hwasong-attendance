@@ -1,5 +1,7 @@
+import ssl
 import sql_query
 import PySimpleGUI as sg
+import sys
 
 
 QUERY_SELECT_ACTIVITY_NAMES = 'SELECT DISTINCT `Activity Name` FROM dataset ORDER BY 1'
@@ -97,10 +99,10 @@ if __name__ == '__main__':
                 dataset = sql_query.read_file(file)
                 activity_names = sql_query.execute_query(dataset, QUERY_SELECT_ACTIVITY_NAMES)
                 activity_names = activity_names['Activity Name']
-            except:
+            except Exception as e:
                 dataset = None
                 activity_names = []
-
+                print(e, file=sys.stderr)
             window["-ACTIVITY-"].update(activity_names)
         
         # Activity selected
