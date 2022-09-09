@@ -1,11 +1,10 @@
-import ssl
 import sql_query
 import PySimpleGUI as sg
 import sys
 
 
 QUERY_SELECT_ACTIVITY_NAMES = 'SELECT DISTINCT `Activity Name` FROM dataset ORDER BY 1'
-def QUERY_SELECT_ACTIVITY_FREQUENCY(activities, min_attendance=1):
+def QUERY_SELECT_ACTIVITY_FREQUENCY(activities: list) -> str:
     if len(activities) == 0:
         where_clause = ''
     else:
@@ -24,19 +23,17 @@ def QUERY_SELECT_ACTIVITY_FREQUENCY(activities, min_attendance=1):
         {where_clause}
         GROUP BY
             Name, Surname
-        HAVING
-            COUNT(*) >= {min_attendance}
         ORDER BY
             Attendance DESC, Surname, Name
 
-    '''.format(where_clause=where_clause, min_attendance=min_attendance)
+    '''.format(where_clause=where_clause)
 
 
 # GUI Layout
 file_column = [
     [
-        sg.Text("Attendance file"),
-        sg.In(size=40, enable_events=True, key="-FILE-"),
+        sg.Text('Attendance file'),
+        sg.In(size=40, enable_events=True, key='-FILE-'),
         sg.FileBrowse(file_types=(('Excel, CSV', '*.xlsx *.csv'),)),
     ],
     [
@@ -45,7 +42,7 @@ file_column = [
             enable_events=True,
             size=(65, 20),
             select_mode=sg.LISTBOX_SELECT_MODE_MULTIPLE,
-            key="-ACTIVITY-")
+            key='-ACTIVITY-')
     ],
 ]
 
@@ -58,7 +55,7 @@ attendance_column = [
             auto_size_columns=False,
             # cols_justification=['l', 'l', 'r'],
             num_rows=20,
-            key="-ATTENDANCE-")
+            key='-ATTENDANCE-')
     ],
     [
         sg.Text(
@@ -84,17 +81,17 @@ if __name__ == '__main__':
     dataset = None
     #res = sql_query.execute_query(dataset, 'SELECT * FROM dataset LIMIT 10')
     
-    window = sg.Window("HWASONG Attendance Report Viewer", layout)
+    window = sg.Window('HWASONG Attendance Report Viewer', layout)
 
     # Run the Event Loop
     while True:
         event, values = window.read()
-        if event == "Exit" or event == sg.WIN_CLOSED:
+        if event == 'Exit' or event == sg.WIN_CLOSED:
             break
         
         # File selected
-        if event == "-FILE-":
-            file = values["-FILE-"]
+        if event == '-FILE-':
+            file = values['-FILE-']
             try:
                 dataset = sql_query.read_file(file)
                 activity_names = sql_query.execute_query(dataset, QUERY_SELECT_ACTIVITY_NAMES)
@@ -103,10 +100,11 @@ if __name__ == '__main__':
                 dataset = None
                 activity_names = []
                 print(e, file=sys.stderr)
-            window["-ACTIVITY-"].update(activity_names)
+            window['-ACTIVITY-'].update(activity_names)
+            window['-ATTENDANCE-'].update([])
         
         # Activity selected
-        elif event == "-ACTIVITY-":
+        elif event == '-ACTIVITY-':
             if dataset is None:
                 continue
             

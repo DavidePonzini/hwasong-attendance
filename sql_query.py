@@ -9,7 +9,7 @@ import pandasql as pdsql
 import argparse
 
 
-def read_file(filepath):
+def read_file(filepath: str) -> pd.DataFrame:
     file_ext = os.path.splitext(filepath)[1]
 
     if file_ext == '.xlsx':
@@ -21,7 +21,7 @@ def read_file(filepath):
         exit(1)
 
 
-def write_file(filepath, data):
+def write_file(filepath: str, data: pd.DataFrame) -> None:
     file_ext = os.path.splitext(filepath)[1]
 
     if file_ext == '.xlsx':
@@ -32,7 +32,7 @@ def write_file(filepath, data):
         print('Unknown output file format (only .csv and .xlsx are accepted')
         exit(1)
 
-def execute_query(dataset, query):
+def execute_query(dataset: pd.DataFrame, query: str) -> pd.DataFrame:
     return pdsql.sqldf(query, locals())
 
 
